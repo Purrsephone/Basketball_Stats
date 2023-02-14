@@ -1,5 +1,4 @@
-
-
+from collections import Counter
 
 # Step 1: Parse & Format Input
 #   binary values separated by spaces =>
@@ -29,6 +28,14 @@ def parseFormatBinary(input):
     
     return strLst 
     
+def counterSummary(counterDict):
+        print("\nSummary:")
+        print("~~~~~~~")
+        for key in counterDict.keys():
+            print(key + ":" + str(counterDict[key]))
+        print("~~~~~~~")
+        print("\n")
+    
 # Step 2: Initialize Pattern Variables 
 class Pattern:
     masterLst = ["000", "001", "110", "111", "0000", "0001", "1110", "1111"]
@@ -43,13 +50,19 @@ class Pattern:
                 "pattern1110Count": 0,
                 "pattern1111Count": 0}
     
+    def cpyCounterDict(self, counterDict, newDict):
+        for key in counterDict.keys():
+            newDict[key] = counterDict[key]
+        return newDict
+        
     def printCounters(self, counterDict):
         print("\nPattern Counters")
         print("~~~~~~~")
         for key in counterDict.keys():
             print(key + ":" + str(counterDict[key]))
         print("~~~~~~~")
-    
+        print("\n")
+        
     # increments the corresponding counter
     # returns unique int, or 0 if None
     def patternMatcher(self, pattern, counterDict):
@@ -87,10 +100,11 @@ strLst1 = parseFormatBinary(input1)
 strLst2 = parseFormatBinary(input2)
 strLst3 = parseFormatBinary(input3)
 
-def patternFinder(pattern, binaryString):
+def patternFinder(pattern, binaryString, newDict, printall):
     counterDict= pattern.counterDict()
     # iterate through each input binary string
-    print("input: " + "".join(binaryString))
+    if printall:
+        print("input: " + "".join(binaryString))
     # init streak bools
     isHitStreak = False
     isMissStreak = False
@@ -99,8 +113,10 @@ def patternFinder(pattern, binaryString):
         eIndex = index + 3
         # stop looping at end 
         if eIndex > len(binaryString):
-            pattern.printCounters(counterDict)
-            return pattern
+            if printall:
+                pattern.printCounters(counterDict)
+            pattern.cpyCounterDict(counterDict, newDict)
+            return newDict
         # if on a streak, don't double count 
         if isHitStreak:
             if binaryString[(eIndex-1)] == '0':
@@ -121,27 +137,36 @@ def patternFinder(pattern, binaryString):
             eIndex = index + 4
             # check if index out of bounds
             if eIndex > len(binaryString):
-                pattern.printCounters(counterDict)
-                return pattern
+                if printall:
+                    pattern.printCounters(counterDict)
+                pattern.cpyCounterDict(counterDict, newDict)
+                return newDict
             fourDigitStr = binaryString[index:eIndex]
             if pattern.patternMatcher(fourDigitStr, counterDict) > 0:
                 if fourDigitStr=='1111':
                     isHitStreak=True
                 if fourDigitStr=='0000':
                     isMissStreak=True
-    pattern.printCounters(counterDict)
-    return pattern
+    if printall:
+        pattern.printCounters(counterDict)
+    pattern.cpyCounterDict(counterDict, newDict)
+    return newDict
 
-for p in strLst1:
-    p1 = Pattern()
-    p1 = patternFinder(p1, p)
+def basketballStats(input, printall):
+    print("input: " + " ".join(input))
+    dicts = []
+    for p in input:
+        p1 = Pattern() 
+        emptyDict = p1.counterDict()
+        newDict = {}
+        p1 = patternFinder(p1, p, newDict, printall)
+        dicts.append(newDict)
+    d = {k: v for k in dicts[0] for v in [sum(d[k] for d in dicts)]}
+    counterSummary(d)
+    
+basketballStats(strLst1, False)
+basketballStats(strLst2, False)
+basketballStats(strLst3, False)
 
-
-for p in strLst2:
-    p1 = patternFinder(p1, p)
-
-for p in strLst3:
-    p3 = Pattern()
-    p3 = patternFinder(p3, p)
 
 
